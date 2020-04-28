@@ -11,6 +11,7 @@ base_topic: str = "home/"
 available_topic: str = base_topic + client_name + "/available"
 temp_state_topic = base_topic + client_name + "/thermometer" + "/state"
 humidity_state_topic = base_topic + client_name + "/hygrometer" + "/state"
+pressure_state_topic = base_topic + client_name + "/barometer" + "/state"
 update_delay: float = 1
 
 
@@ -24,9 +25,15 @@ def get_humidity() -> str:
     return "%0.1f" % (random.random() * 100)
 
 
+def get_pressure() -> str:
+    # Replace code here with actual device querying
+    return "%0.1f" % (random.random() * 6 + 1015.25)
+
+
 def start_polling(client: mqtt.Client) -> None:
     client.publish(temp_state_topic, payload=get_temp(), qos=1, retain=True)
     client.publish(humidity_state_topic, payload=get_humidity(), qos=1, retain=True)
+    client.publish(pressure_state_topic, payload=get_pressure(), qos=1, retain=True)
     threading.Timer(update_delay, start_polling, [client]).start()
 
 
@@ -35,6 +42,7 @@ def on_connect(client: mqtt.Client, userdata, flags, rc):
     client.publish(available_topic, payload="online", qos=1, retain=True)
     client.publish(temp_state_topic, payload=get_temp(), qos=1, retain=True)
     client.publish(humidity_state_topic, payload=get_humidity(), qos=1, retain=True)
+    client.publish(pressure_state_topic, payload=get_pressure(), qos=1, retain=True)
 
 
 def connect(addr: str = broker_addr) -> mqtt.Client:
