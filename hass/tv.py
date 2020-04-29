@@ -1,53 +1,49 @@
 # from config_node import *
 import paho.mqtt.client as mqtt
-
-# Global variables
-broker_addr: str = "hass.local"
-client_name: str = "mqtt_tv_1"
-base_topic: str = "home/"
-
-available_topic: str = base_topic + client_name + "/available"
-state_topic: str = base_topic + client_name + "/state"
-set_topic: str = base_topic + client_name + "/set"
-
-last_state: str = ""
+import config as cfg
 
 
-def on_connect(client: mqtt.Client, userdata, flags, rc):
-    print("Connected to MQTT server at %s" % (broker_addr))
-    client.publish(available_topic, payload="online", qos=1, retain=True)
-    client.publish(state_topic, payload=last_state, qos=1, retain=True)
-    client.subscribe(set_topic)
+class SIISTV():
+    def __init__(self, name: str = "mqtt_tv_1"):
+        self.name: str = name
+        self.last_state: str = ""
+        self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
+        self.state_topic: str = cfg.base_topic + self.name + cfg.state_suffix
+        self.set_topic: str = cfg.base_topic + self.name + cfg.set_suffix
+        self.client: mqtt.Client = mqtt.Client(self.name)
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+        self.client.username_pw_set(cfg.username, cfg.password)
+        self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
+    def on_connect(self, client: mqtt.Client, userdata, flags, rc):
+        print("Connected to MQTT server at %s" % (self.addr))
+        self.client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
+        self.client.publish(self.state_topic, payload=self.last_state, qos=1, retain=True)
+        self.client.subscribe(self.set_topic)
 
-def on_message(client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
-    # Check if this is a message that sets the TV
-    global last_state
-    if message.topic == set_topic:
-        # Read the target temp
-        tv_state: str = message.payload.decode("utf-8")
-        print("Setting the TV to %s" % tv_state)
-        last_state = tv_state
-        # Echo it back
-        response = tv_state
-        client.publish(state_topic, response, qos=1, retain=True)
-    else:
-        # This should not happen, we are not subscribed to anything else
-        print("Unexpected message received, channel: %s" % message.topic)
-    pass
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        # Check if this is a message that sets the TV
+        if message.topic == self.set_topic:
+            # Read the target temp
+            tv_state: str = message.payload.decode("utf-8")
+            print("Setting the TV to %s" % tv_state)
+            self.last_state = tv_state
+            # Echo it back
+            response = tv_state
+            self.client.publish(self.state_topic, response, qos=1, retain=True)
+        else:
+            # This should not happen, we are not subscribed to anything else
+            print("Unexpected message received, channel: %s" % message.topic)
+        pass
 
-
-def connect(addr: str = broker_addr) -> mqtt.Client:
-    client = mqtt.Client(client_name)
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.username_pw_set("adrien", "mqttpassword")
-    client.will_set(available_topic, payload="offline", qos=1, retain=True)
-    client.connect(broker_addr, port=1883)
-    return client
+    def connect(self, addr: str = cfg.broker_addr) -> None:
+        self.addr: str = addr
+        self.client.connect(self.addr, port=cfg.port)
 
 
 # Start polling the files
 if __name__ == "__main__":
-    client: mqtt.Client = connect(broker_addr)
-    client.loop_forever()
+    tv = SIISTV()
+    tv.connect()
+    tv.client.loop_forever()
