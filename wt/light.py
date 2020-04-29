@@ -10,7 +10,7 @@ class SIISLight(Thing):
     def __init__(self):
         Thing.__init__(
             self,
-            'urn:dev:ops:my-lamp-1234',
+            'urn:dev:siis:light',
             'My Multi Lamp',
             ['OnOffSwitch', 'Light'],
             'A web connected lamp'
