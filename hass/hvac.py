@@ -86,10 +86,13 @@ class SIISHVAC():
         self.addr: str = addr
         self.client.connect(self.addr, port=cfg.port)
 
+    def start(self):
+        self.connect()
+        self.client.loop_start()
+        self.start_polling()
+
 
 # Start polling the files
 if __name__ == "__main__":
     hvac = SIISHVAC()
-    hvac.connect()
-    hvac.client.loop_start()
-    hvac.start_polling()
+    hvac.start()

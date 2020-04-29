@@ -32,10 +32,13 @@ class SIISSmoke():
         self.addr: str = addr
         self.client.connect(self.addr, port=cfg.port)
 
+    def start(self):
+        self.connect()
+        self.client.loop_start()
+        self.start_polling()
+
 
 # Start polling the files
 if __name__ == "__main__":
     smoke = SIISSmoke()
-    smoke.connect()
-    smoke.client.loop_start()
-    smoke.start_polling()
+    smoke.start()

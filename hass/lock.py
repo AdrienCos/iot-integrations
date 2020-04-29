@@ -41,9 +41,12 @@ class SIISLock():
         self.addr: str = addr
         self.client.connect(addr, port=1883)
 
+    def start(self):
+        self.connect()
+        self.client.loop_forever()
+
 
 # Start polling the files
 if __name__ == "__main__":
     lock = SIISLock()
-    lock.connect()
-    lock.client.loop_forever()
+    lock.start()

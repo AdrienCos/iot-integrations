@@ -41,9 +41,12 @@ class SIISTV():
         self.addr: str = addr
         self.client.connect(self.addr, port=cfg.port)
 
+    def start(self):
+        self.connect()
+        self.client.loop_forever()
+
 
 # Start polling the files
 if __name__ == "__main__":
     tv = SIISTV()
-    tv.connect()
-    tv.client.loop_forever()
+    tv.start()

@@ -32,10 +32,13 @@ class SIISSwitch():
         self.addr: str = addr
         self.client.connect(self.addr, port=cfg.port)
 
+    def start(self):
+        self.connect()
+        self.client.loop_start()
+        self.start_polling()
+
 
 # Start polling the files
 if __name__ == "__main__":
     switch = SIISSwitch()
-    switch.connect()
-    switch.client.loop_start()
-    switch.start_polling()
+    switch.start()

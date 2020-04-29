@@ -84,9 +84,12 @@ class SIISLight():
         self.addr: str = addr
         self.client.connect(self.addr, port=1883)
 
+    def start(self):
+        self.connect()
+        self.client.loop_forever()
+
 
 # Start polling the files
 if __name__ == "__main__":
     light = SIISLight()
-    light.connect()
-    light.client.loop_forever()
+    light.start()

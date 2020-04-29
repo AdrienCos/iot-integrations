@@ -48,10 +48,13 @@ class SIISSensor():
     def connect(self, addr: str = cfg.broker_addr) -> None:
         self.client.connect(addr, port=cfg.port)
 
+    def start(self):
+        self.connect()
+        self.client.loop_start()
+        self.start_polling()
+
 
 # Start polling the files
 if __name__ == "__main__":
     sensor = SIISSensor()
-    sensor.connect()
-    sensor.client.loop_start()
-    sensor.start_polling()
+    sensor.start()
