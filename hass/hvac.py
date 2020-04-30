@@ -55,7 +55,7 @@ class SIISHVAC():
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         print("Connected to MQTT server at %s" % (self.addr))
-        self.client.publish(self.available_topic, payload="online", qos=1, retain=True)
+        self.client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
         self.client.subscribe(self.mode_set_topic)
         self.client.subscribe(self.target_temperature_set)
 

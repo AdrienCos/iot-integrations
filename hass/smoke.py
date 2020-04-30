@@ -25,7 +25,7 @@ class SIISSmoke():
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         print("Connected to MQTT server at %s" % (self.addr))
-        client.publish(self.available_topic, payload="online", qos=1, retain=True)
+        client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
         client.publish(self.state_topic, payload=self.get_state(), qos=1, retain=True)
 
     def connect(self, addr: str = cfg.broker_addr) -> mqtt.Client:

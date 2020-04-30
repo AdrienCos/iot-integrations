@@ -3,8 +3,8 @@ import paho.mqtt.client as mqtt
 import config as cfg
 
 
-class SIISLock():
-    def __init__(self, name: str = "mqtt_lock_1"):
+class SIISOutlet():
+    def __init__(self, name: str = "mqtt_outlet_1"):
         self.name: str = name
         self.last_state: str = ""
         self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
@@ -26,11 +26,11 @@ class SIISLock():
         # Check if this is a message that sets the lock
         if message.topic == self.set_topic:
             # Read the target temp
-            lock: str = message.payload.decode("utf-8")
-            print("Setting the lock to %s" % lock)
-            self.last_state = lock
+            outlet: str = message.payload.decode("utf-8")
+            print("Setting the outlet to %s" % outlet)
+            self.last_state = outlet
             # Echo it back
-            response = lock
+            response = outlet
             client.publish(self.state_topic, response, qos=1, retain=True)
         else:
             # This should not happen, we are not subscribed to anything else
@@ -48,5 +48,5 @@ class SIISLock():
 
 # Start polling the files
 if __name__ == "__main__":
-    lock = SIISLock()
+    lock = SIISOutlet()
     lock.start()
