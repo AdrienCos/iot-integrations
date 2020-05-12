@@ -5,6 +5,9 @@ import logging
 import tornado.ioloop
 import random
 
+import config as cfg
+import paho.mqtt.client as mqtt
+
 
 class SIISHVAC(Thing):
     """A HVAC that logs received commands to stdout."""
@@ -75,12 +78,39 @@ class SIISHVAC(Thing):
                          'readOnly': False,
                      }))
 
-        self.update_period: float = 1000.0
+        self.outside_temp: float = 20
+        self.heating_efficiency: float = 0.5
+        self.cooling_efficiency: float = 0.5
+        self.thermal_cond: float = 0.05
+        self.name = "mqtt_hvac_1"
+        self.scheduler_topic = cfg.scheduler_topic + self.name
+        self.client: mqtt.Client = mqtt.Client(self.name)
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+        self.client.username_pw_set(cfg.username, cfg.password)
+        self.connect()
+
+        self.update_period: float = cfg.update_delay * 1000.0
         self.timer: tornado.ioloop.PeriodicCallback = tornado.ioloop.PeriodicCallback(
             self.update_temp,
             self.update_period
         )
         self.timer.start()
+
+    def connect(self):
+        self.client.connect(cfg.broker_addr, port=cfg.port)
+
+    def on_connect(self, client: mqtt.Client, userdata, flags, rc):
+        logging.debug("Connected to broker")
+        self.client.subscribe(self.scheduler_topic)
+
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            new_outside_temp = float(message.payload.decode("utf-8"))
+            logging.debug(f"Setting outside temperature to {new_outside_temp}C")
+            self.outside_temp = new_outside_temp
+        else:
+            logging.error(f"Message received from invalid topic: {message.topic}")
 
     def set_mode(self, mode: str) -> None:
         logging.debug("Setting mode to %s" % mode)
@@ -91,15 +121,19 @@ class SIISHVAC(Thing):
         self.update_state(target=target)
 
     def update_temp(self):
+        "Uses the outside temp, last temp, and the state of the HVAC to calculate the new inside temp"
         current: float = self.current_temp.get()
         state: str = self.state.get()
-        if state == "off":
-            return
-        elif state == "heating":
-            current += round(0.5 * random.random(), 1) + 0.1
+        outside: float = self.outside_temp
+        if state == "heating":
+            hvac_effect = self.update_period * self.heating_efficiency
         elif state == "cooling":
-            current -= round(0.5 * random.random(), 1) + 0.1
-        self.current_temp.notify_of_external_update(current)
+            hvac_effect = self.update_period * self.cooling_efficiency
+        else:
+            hvac_effect = 0
+        temp_leakage = self.update_period * self.thermal_cond * (outside - current)
+        new_temp = current + temp_leakage + hvac_effect
+        self.current_temp.notify_of_external_update(new_temp)
         self.update_state()
 
     def update_state(self, mode: str = None, target: float = None):

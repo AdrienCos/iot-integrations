@@ -30,15 +30,6 @@ class SIISHVAC():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
-    def get_temp(self) -> float:
-        # Replace code here with actual device querying
-        if self.last_action == "heating":
-            return self.last_temp + round((random.random() * 0.5), 1)
-        elif self.last_action == "cooling":
-            return self.last_temp - round((random.random() * 0.5), 1)
-        else:
-            return self.last_temp + round((random.random() * 0.2 - 0.1), 1)
-
     def calculate_temp(self) -> float:
         "Uses the outside temp, last temp, and the state of the HVAC to calculate the new inside temp"
         if self.last_action == "heating":

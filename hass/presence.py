@@ -4,7 +4,7 @@ import config as cfg
 
 
 class SIISPresence():
-    def __init__(self, name: str = "mqtt_binary_1"):
+    def __init__(self, name: str = "mqtt_presence_1"):
         self.name: str = name
         self.last_state: str = "OFF"
         self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix

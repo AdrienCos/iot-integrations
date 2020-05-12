@@ -2,37 +2,37 @@ from __future__ import division
 from webthing import (Property, SingleThing, Thing, Value,
                       WebThingServer)
 import logging
-import paho.mqtt.client as mqtt
 
+import paho.mqtt.client as mqtt
 import config as cfg
 
 
-class SIISTV(Thing):
-    """A TV that logs received commands to stdout."""
+class SIISPresence(Thing):
+    """A presence sensor."""
 
     def __init__(self):
         Thing.__init__(
             self,
-            'urn:dev:siis:tv',
-            'My TV',
-            ['OnOffSwitch'],
-            'A web connected TV'
+            'urn:dev:siis:presence',
+            'My Presence Sensor',
+            ['BinarySensor'],
+            'A web connected presence sensor'
         )
-
-        self.state: Value = Value(False, self.set_state)
+        self.update_period: float = 10000.0
+        self.state: Value = Value(False)
         self.add_property(
             Property(self,
-                     'on',
+                     'state',
                      self.state,
                      metadata={
-                         '@type': 'OnOffProperty',
-                         'title': 'On state',
+                         '@type': 'BooleanProperty',
+                         'title': 'On/Off',
                          'type': 'boolean',
-                         'description': 'Whether the TV is on',
-                         'readOnly': False,
+                         'description': 'Whether the switch is turned on',
+                         'readOnly': True,
                      }))
 
-        self.name = "mqtt_tv_1"
+        self.name = "mqtt_presence_1"
         self.scheduler_topic = cfg.scheduler_topic + self.name
         self.client: mqtt.Client = mqtt.Client(self.name)
         self.client.on_connect = self.on_connect
@@ -42,7 +42,7 @@ class SIISTV(Thing):
         self.connect()
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        logging.debug("Connected to MQTT broker")
+        logging.debug("Connected to broker")
         self.client.subscribe(self.scheduler_topic)
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
@@ -61,13 +61,9 @@ class SIISTV(Thing):
     def connect(self):
         self.client.connect(cfg.broker_addr, port=cfg.port)
 
-    def set_state(self, state: bool) -> None:
-        logging.debug(f"TV is now {'ON' if state else 'OFF'}")
-        # Handle the hardware side
-
 
 def run_server():
-    thing = SIISTV()
+    thing = SIISPresence()
 
     # If adding more than one thing, use MultipleThings() with a name.
     # In the single thing case, the thing's name will be broadcast.
@@ -76,6 +72,7 @@ def run_server():
         logging.info('starting the server')
         server.start()
     except KeyboardInterrupt:
+        thing.cancel_update()
         logging.info('stopping the server')
         server.stop()
         logging.info('done')
