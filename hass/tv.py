@@ -10,6 +10,7 @@ class SIISTV():
         self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
         self.state_topic: str = cfg.base_topic + self.name + cfg.state_suffix
         self.set_topic: str = cfg.base_topic + self.name + cfg.set_suffix
+        self.scheduler_topic: str = cfg.scheduler_topic + self.name
         self.client: mqtt.Client = mqtt.Client(self.name)
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
@@ -21,6 +22,7 @@ class SIISTV():
         self.client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
         self.client.publish(self.state_topic, payload=self.last_state, qos=1, retain=True)
         self.client.subscribe(self.set_topic)
+        self.client.subscribe(self.scheduler_topic)
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         # Check if this is a message that sets the TV
@@ -30,6 +32,13 @@ class SIISTV():
             print("Setting the TV to %s" % tv_state)
             self.last_state = tv_state
             # Echo it back
+            response = tv_state
+            self.client.publish(self.state_topic, response, qos=1, retain=True)
+        elif message.topic == self.scheduler_topic:
+            tv_state = message.payload.decode("utf-8")
+            print(f"Received message from Scheduler, setting new state to {tv_state}")
+            self.last_state = tv_state
+            # Publish the state to Hass
             response = tv_state
             self.client.publish(self.state_topic, response, qos=1, retain=True)
         else:
