@@ -6,7 +6,7 @@ from time import sleep
 class SmokeDetector():
     "Simple wrapper for a smoke detector device"
 
-    def __init__(self, pin, activated: Callable, deactivated: Callable):
+    def __init__(self, pin: int, activated: Callable, deactivated: Callable):
         self.sensor = DigitalInputDevice(pin, pull_up=None, active_state=False)
         self.sensor.when_activated = activated
         self.sensor.when_deactivated = deactivated
