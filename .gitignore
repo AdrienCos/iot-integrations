@@ -1,2 +1,5 @@
 # MyPy cache
 .mypy_cache/
+
+# VSCode settings
+.vscode/
