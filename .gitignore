@@ -3,3 +3,6 @@
 
 # VSCode settings
 .vscode/
+
+# PyCache
+*__pycache__/
