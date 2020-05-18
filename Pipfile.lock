@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "dbe58b8246ef2f81d449b14745c1dde078e6ac4026004657e22fdead963976e8"
+            "sha256": "aedb167adf8bc1122d5a05ea8121268691f26cc3202ed42250e95a01c2d5f276"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -108,6 +108,14 @@
             ],
             "version": "==0.4.3"
         },
+        "pafy": {
+            "hashes": [
+                "sha256:364f1d1312c89582d97dc7225cf6858cde27cb11dfd64a9c2bab1a2f32133b1e",
+                "sha256:769e35aa6988686d47fa2ab235d15c9952c7873c470f6a6b05cf6bcd93e62515"
+            ],
+            "index": "pypi",
+            "version": "==0.5.5"
+        },
         "paho-mqtt": {
             "hashes": [
                 "sha256:e3d286198baaea195c8b3bc221941d25a3ab0e1507fc1779bdb7473806394be4"
@@ -141,6 +149,14 @@
                 "sha256:28669905fe725965daa16184933676547c5bb40a5153055a8dee2a4bd7933ad3"
             ],
             "version": "==0.16.0"
+        },
+        "python-vlc": {
+            "hashes": [
+                "sha256:5422b79d347b6419008ee91cfd9663edc37eaf2a0bd8fb9017d4cc2e5f249dda",
+                "sha256:6e6799cae79a1cda737144f6ac72d72d449752c5384fb2b5cb326600626e3bef"
+            ],
+            "index": "pypi",
+            "version": "==3.0.9113"
         },
         "rpi-ws281x": {
             "hashes": [
@@ -222,6 +238,14 @@
             ],
             "index": "pypi",
             "version": "==0.13.0"
+        },
+        "youtube-dl": {
+            "hashes": [
+                "sha256:0b5d3280522469968eb62eecb1f966f422b2be22f000a801bf87cb2172d8ea39",
+                "sha256:22da6788b55b7b267c6d59bcdfaf10e67a9ac980976d50d29a670473ad2a05bb"
+            ],
+            "index": "pypi",
+            "version": "==2020.5.8"
         },
         "zeroconf": {
             "hashes": [

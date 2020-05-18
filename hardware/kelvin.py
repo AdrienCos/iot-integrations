@@ -1,3 +1,5 @@
+# Source: https://andi-siess.de/rgb-to-color-temperature/
+
 kelvin_table = {
     1000: (255, 56, 0),
     1100: (255, 71, 0),

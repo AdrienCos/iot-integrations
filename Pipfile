@@ -15,6 +15,9 @@ webthing = "*"
 gpiozero = "*"
 "rpi.gpio" = "*"
 rpi-ws281x = "*"
+python-vlc = "*"
+pafy = "*"
+youtube-dl = "*"
 
 [requires]
 python_version = "3.7"
