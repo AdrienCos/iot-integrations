@@ -20,3 +20,6 @@ update_delay: float = 1
 # Payloads
 online_payload: str = "online"
 offline_payload: str = "offline"
+
+# Hardware connections
+pin: int = 18

@@ -1,8 +1,9 @@
 # from config_node import *
 import paho.mqtt.client as mqtt
-import random
 import threading
 import config as cfg
+
+from hardware.switch import Switch
 
 
 class SIISSwitch():
@@ -15,9 +16,14 @@ class SIISSwitch():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
+        self.device = Switch(cfg.pin)
+
     def get_state(self) -> str:
         # Replace code here with actual device querying
-        return "ON" if random.random() > 0.7 else "OFF"
+        state = self.device.value
+        if state:
+            return "ON"
+        return "OFF"
 
     def start_polling(self) -> None:
         self.client.publish(self.state_topic, payload=self.get_state(), qos=1, retain=True)

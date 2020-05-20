@@ -4,6 +4,9 @@ import random
 import threading
 import config as cfg
 
+from hardware.barometer import Barometer
+from hardware.thermometer import Thermometer
+
 
 class SIISSensor():
     def __init__(self, name: str = "mqtt_sensor_1"):
@@ -17,20 +20,24 @@ class SIISSensor():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
-    @staticmethod
-    def get_temp() -> str:
-        # Replace code here with actual device querying
-        return "%0.1f" % (random.random() * 20 + 10)
+        self.thermometer = Thermometer()
+        self.barometer = Barometer()
+        self.hygrometer = Barometer()
 
-    @staticmethod
-    def get_humidity() -> str:
+    def get_temp(self) -> str:
         # Replace code here with actual device querying
+        temp = self.thermometer.value
+        return "%0.1f" % (temp)
+
+    def get_humidity(self) -> str:
+        # Replace code here with actual device querying
+        _ = self.hygrometer.value
         return "%0.1f" % (random.random() * 100)
 
-    @staticmethod
-    def get_pressure() -> str:
+    def get_pressure(self) -> str:
         # Replace code here with actual device querying
-        return "%0.1f" % (random.random() * 6 + 1015.25)
+        press = self.barometer.value
+        return "%0.1f" % (press)
 
     def start_polling(self) -> None:
         self.client.publish(self.temp_state_topic, payload=self.get_temp(), qos=1, retain=True)

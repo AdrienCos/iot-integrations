@@ -1,6 +1,7 @@
 # from config_node import *
 import paho.mqtt.client as mqtt
 import config as cfg
+from hardware.tv import TV
 
 
 class SIISTV():
@@ -17,6 +18,8 @@ class SIISTV():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
+        self.device: TV = TV()
+
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         print("Connected to MQTT server at %s" % (self.addr))
         self.client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
@@ -30,14 +33,14 @@ class SIISTV():
             # Read the target temp
             tv_state: str = message.payload.decode("utf-8")
             print("Setting the TV to %s" % tv_state)
-            self.last_state = tv_state
+            self.set_state(tv_state)
             # Echo it back
             response = tv_state
             self.client.publish(self.state_topic, response, qos=1, retain=True)
         elif message.topic == self.scheduler_topic:
             tv_state = message.payload.decode("utf-8")
             print(f"Received message from Scheduler, setting new state to {tv_state}")
-            self.last_state = tv_state
+            self.set_state(tv_state)
             # Publish the state to Hass
             response = tv_state
             self.client.publish(self.state_topic, response, qos=1, retain=True)
@@ -45,6 +48,15 @@ class SIISTV():
             # This should not happen, we are not subscribed to anything else
             print("Unexpected message received, channel: %s" % message.topic)
         pass
+
+    def set_state(self, state: str) -> None:
+        if state == "ON":
+            self.device.on()
+        elif state == "OFF":
+            self.device.off()
+        else:
+            print("Invalid state")
+        self.last_state = state
 
     def connect(self, addr: str = cfg.broker_addr) -> None:
         self.addr: str = addr

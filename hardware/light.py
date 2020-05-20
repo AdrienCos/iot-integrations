@@ -80,7 +80,7 @@ class RGBLight():
         return bri
 
     @brightness.setter
-    def brightness(self, value) -> None:
+    def brightness(self, value: int) -> None:
         self.pixels.setBrightness(value)
 
     @property

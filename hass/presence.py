@@ -2,6 +2,8 @@
 import paho.mqtt.client as mqtt
 import config as cfg
 
+from hardware.pir import PIR
+
 
 class SIISPresence():
     def __init__(self, name: str = "mqtt_presence_1"):
@@ -15,6 +17,14 @@ class SIISPresence():
         self.client.on_message = self.on_message
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
+
+        self.device: PIR(cfg.pin, self.activated, self.deactivated)
+
+    def activated(self) -> None:
+        pass
+
+    def deactivated(self) -> None:
+        pass
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         if message.topic == self.scheduler_topic:

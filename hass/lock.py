@@ -2,6 +2,8 @@
 import paho.mqtt.client as mqtt
 import config as cfg
 
+from hardware.servo import ServoMotor
+
 
 class SIISLock():
     def __init__(self, name: str = "mqtt_lock_1"):
@@ -16,11 +18,22 @@ class SIISLock():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
+        self.device: ServoMotor = ServoMotor(cfg.pin)
+
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         print("Connected to MQTT server at %s" % (self.addr))
         client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
         client.publish(self.state_topic, payload=self.last_state, qos=1, retain=True)
         client.subscribe(self.set_topic)
+
+    def set_state(self, state: str) -> None:
+        if state == "ON":
+            self.device.on()
+        elif state == "OFF":
+            self.device.off()
+        else:
+            print("Invalid state")
+        self.last_state = state
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         # Check if this is a message that sets the lock

@@ -4,6 +4,9 @@ import random
 import threading
 import config as cfg
 
+from hardware.thermometer import Thermometer
+from hardware.relay import Relay
+
 
 class SIISHVAC():
     def __init__(self, name: str = "mqtt_hvac_1"):
@@ -30,6 +33,9 @@ class SIISHVAC():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
+        self.thermometer: Thermometer = Thermometer()
+        self.heater_cooler: Relay = Relay(cfg.pin)
+
     def calculate_temp(self) -> float:
         "Uses the outside temp, last temp, and the state of the HVAC to calculate the new inside temp"
         if self.last_action == "heating":
@@ -40,6 +46,7 @@ class SIISHVAC():
             hvac_effect = 0
         temp_leakage = cfg.update_delay * self.thermal_cond * (self.outside_temp - self.last_temp)
         new_temp = self.last_temp + temp_leakage + hvac_effect
+        _ = self.thermometer.value
         return new_temp
 
     def start_polling(self) -> None:
@@ -56,9 +63,16 @@ class SIISHVAC():
             payload = "off"
         else:
             payload = "idle"
-        self.last_action = payload
+        self.set_action(payload)
         self.client.publish(self.action_state_topic, payload=self.last_action, qos=1, retain=True)
         threading.Timer(cfg.update_delay, self.start_polling).start()
+
+    def set_action(self, action: str) -> None:
+        if action == "off":
+            self.heater_cooler.unset()
+        else:
+            self.heater_cooler.set()
+        self.last_action = action
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         print("Connected to MQTT server at %s" % (self.addr))

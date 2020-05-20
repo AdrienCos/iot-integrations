@@ -3,16 +3,7 @@ import paho.mqtt.client as mqtt
 import json
 import config as cfg
 
-# Global variables
-# client: mqtt.Client = None
-# broker_addr: str = "hass.local"
-# client_name: str = "mqtt_light_1"
-# base_topic: str = "home/"
-# set_topic: str = base_topic + client_name + "/set"
-# state_topic: str = base_topic + client_name + "/state"
-# available_topic: str = base_topic + client_name + "/available"
-
-# last_state: dict = {"state": "OFF"}
+from hardware.light import RGBLight
 
 
 class SIISLight():
@@ -28,6 +19,8 @@ class SIISLight():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
+        self.device: RGBLight = RGBLight(cfg.pin)
+
     def set_state(self, state: dict):
         if state["state"] == "ON":
             # Check if we have some RGB instructions
@@ -36,26 +29,27 @@ class SIISLight():
                 r: int = int(state["color"]["r"])
                 g: int = int(state["color"]["g"])
                 b: int = int(state["color"]["b"])
+
                 # Set the RGB value of the lamp
-                _ = r + g + b
+                self.device.color = (r, g, b)
             elif "brightness" in state.keys():
                 print("Setting the lamp in brightness mode")
                 brightness: int = int(state["brightness"])
                 # Set the brightness of the lamp
-                _ = brightness
+                self.device.brightness = brightness
             elif "color_temp" in state.keys():
                 print("Setting the lamp in temperature mode")
                 temp: int = int(state["color_temp"])
                 # Set the temperature of the lamp
-                _ = temp
+                self.device.temperature = temp
             else:
                 print("Turning on the lamp")
                 # Set the lamp to full setting
-                pass
+                self.device.on()
         else:
             print("Turning off the lamp")
             # Turn off the lamp
-            pass
+            self.device.off()
         self.last_state = state
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
@@ -70,7 +64,6 @@ class SIISLight():
         if message.topic == self.set_topic:
             # Load the JSON state
             message_json = json.loads(message.payload)
-            print(message_json)
             self.set_state(message_json)
             # Echo it back
             response = json.dumps(message_json)

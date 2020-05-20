@@ -2,6 +2,8 @@
 import paho.mqtt.client as mqtt
 import config as cfg
 
+from hardware.relay import Relay
+
 
 class SIISOutlet():
     def __init__(self, name: str = "mqtt_outlet_1"):
@@ -15,6 +17,8 @@ class SIISOutlet():
         self.client.on_message = self.on_message
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
+
+        self.device: Relay = Relay(cfg.pin)
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         print("Connected to MQTT server at %s" % (self.addr))
@@ -36,6 +40,15 @@ class SIISOutlet():
             # This should not happen, we are not subscribed to anything else
             print("Unexpected message received, channel: %s" % message.topic)
         pass
+
+    def set_state(self, state: str) -> None:
+        if state == "ON":
+            self.device.set()
+        elif state == "OFF":
+            self.device.unset()
+        else:
+            print("Invalid state")
+        self.last_state = state
 
     def connect(self, addr: str = cfg.broker_addr) -> mqtt.Client:
         self.addr: str = addr
