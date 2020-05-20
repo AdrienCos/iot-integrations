@@ -18,6 +18,8 @@ rpi-ws281x = "*"
 python-vlc = "*"
 pafy = "*"
 youtube-dl = "*"
+bmp280 = "*"
+smbus2 = "*"
 
 [requires]
 python_version = "3.7"

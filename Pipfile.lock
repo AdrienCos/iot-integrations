@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "aedb167adf8bc1122d5a05ea8121268691f26cc3202ed42250e95a01c2d5f276"
+            "sha256": "06e9abf99e3084f5c1afe61ed11e50b809cd102b4577e4537d51d68cdd7d21fe"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -30,6 +30,15 @@
             "index": "pypi",
             "version": "==1.5.2"
         },
+        "bmp280": {
+            "hashes": [
+                "sha256:07dd0ce988c4f37c281dc7331120c55b58f4348b3d5b4ffe60997aaeea67bcdd",
+                "sha256:6bfdcf4d74c9e48344dfae7ee6efea57cf60f1ee2fb863477f827b0ac71f0d59",
+                "sha256:f98e0d4888f3d1b562abd02e641c2fc521dee87b7527e28f619feff3c3e06c16"
+            ],
+            "index": "pypi",
+            "version": "==0.0.3"
+        },
         "colorzero": {
             "hashes": [
                 "sha256:acba47119b5d8555680d3cda9afe6ccc5481385ccc3c00084dd973f7aa184599",
@@ -52,6 +61,14 @@
             ],
             "index": "pypi",
             "version": "==1.5.1"
+        },
+        "i2cdevice": {
+            "hashes": [
+                "sha256:1cfcb8f5dccb49c5e56c0c3e35af11a906beb188831b5126f494c79951483a4c",
+                "sha256:369f772b481786fb5783f70a280c87d55ea05ef924bbda4b25eccd05ccc84523",
+                "sha256:c46977340ea69e51955b5650de300576a50a551fa0d2badc91ed7540f4893287"
+            ],
+            "version": "==0.0.6"
         },
         "ifaddr": {
             "hashes": [
@@ -182,6 +199,13 @@
                 "sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c"
             ],
             "version": "==1.14.0"
+        },
+        "smbus2": {
+            "hashes": [
+                "sha256:210e66eebe4d0b1fe836b3ec2751841942e1c4918c0b429b20a0e20a222228b4"
+            ],
+            "index": "pypi",
+            "version": "==0.3.0"
         },
         "tornado": {
             "hashes": [
