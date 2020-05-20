@@ -1,8 +1,10 @@
 from __future__ import division
-from webthing import (Action, Property, SingleThing, Thing, Value,
+from webthing import (Property, SingleThing, Thing, Value,
                       WebThingServer)
 import logging
-import uuid
+import config as cfg
+
+from hardware.relay import Relay
 
 
 class SIISOutlet(Thing):
@@ -29,9 +31,14 @@ class SIISOutlet(Thing):
                          'description': 'Whether the outlet is on',
                      }))
 
+        self.device = Relay(cfg.pin)
+
     def set_value(self, value: bool) -> None:
         logging.debug(f"Outlet set to {'ON' if value else 'OFF'}")
-        return
+        if value:
+            self.device.on()
+        else:
+            self.device.off()
 
 
 def run_server():

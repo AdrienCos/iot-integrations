@@ -4,6 +4,10 @@ from webthing import (Action, Property, SingleThing, Thing, Value,
 import logging
 import uuid
 
+import config as cfg
+
+from hardware.servo import ServoMotor
+
 
 class GenericLockAction(Action):
     def __init__(self, action_type: str, thing, input_):
@@ -38,7 +42,7 @@ class SIISLock(Thing):
             'A web connected lock'
         )
 
-        self.state: Value = Value("unlocked")
+        self.state: Value = Value("unlocked", self.set_state)
         self.add_property(
             Property(self,
                      'locked',
@@ -69,6 +73,16 @@ class SIISLock(Thing):
             },
             UnlockAction
         )
+
+        self.device = ServoMotor(cfg.pin)
+
+    def set_state(self, state: str) -> None:
+        if state == "unlocked":
+            self.device.off()
+        elif state == "locked":
+            self.device.on()
+        else:
+            print("Invalid state")
 
 
 def run_server():

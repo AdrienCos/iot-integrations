@@ -16,7 +16,6 @@ available_suffix: str = "/available"
 # Sensor update delay, in seconds
 update_delay: float = 1
 
-
 # Payloads
 online_payload: str = "online"
 offline_payload: str = "offline"

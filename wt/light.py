@@ -2,6 +2,10 @@ from __future__ import division
 from webthing import (Property, SingleThing, Thing, Value,
                       WebThingServer)
 import logging
+import config as cfg
+
+from typing import Tuple
+from hardware.light import RGBLight
 
 
 class SIISLight(Thing):
@@ -78,16 +82,27 @@ class SIISLight(Thing):
                          'readOnly': True
                      }))
 
+        self.device = RGBLight(cfg.pin)
+
     def set_brightness(self, v):
         logging.debug("Brightness is now %d" % v)
+        self.device.brightness = v
 
     def set_temperature(self, v):
         logging.debug("Temperature is now %d" % v)
         self.properties['colorMode'].value.notify_of_external_update('temperature')
+        self.device.temperature = v
 
     def set_color(self, v):
         logging.debug("Color is now %s" % v)
         self.properties['colorMode'].value.notify_of_external_update('color')
+        self.device.color = self.hex_to_tuple(v)
+
+    @staticmethod
+    def hex_to_tuple(self, hex) -> Tuple[int, int, int]:
+        hex_noo_hash = hex[1:]
+        color: Tuple[int, int, int] = tuple(i for i in bytes.fromhex(hex_noo_hash))
+        return color
 
 
 def run_server():

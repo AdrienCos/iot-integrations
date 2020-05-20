@@ -4,6 +4,9 @@ from webthing import (Property, SingleThing, Thing, Value,
 import logging
 import tornado.ioloop
 import random
+import config as cfg
+
+from hardware.switch import Switch
 
 
 class SIISSwitch(Thing):
@@ -17,7 +20,7 @@ class SIISSwitch(Thing):
             ['BinarySensor'],
             'A web connected lamp'
         )
-        self.update_period: float = 10000.0
+        self.update_period: float = cfg.update_delay * 1000
         self.state: Value = Value(False)
         self.add_property(
             Property(self,
@@ -31,6 +34,8 @@ class SIISSwitch(Thing):
                          'readOnly': True,
                      }))
 
+        self.device = Switch(cfg.pin)
+
         self.timer: tornado.ioloop.PeriodicCallback = tornado.ioloop.PeriodicCallback(
             self.update_state,
             self.update_period
@@ -38,7 +43,7 @@ class SIISSwitch(Thing):
         self.timer.start()
 
     def update_state(self) -> None:
-        new_state: bool = True if random.random() > 0.5 else False
+        new_state: bool = self.device.value
         logging.debug("Switch state is now %d" % new_state)
         self.state.notify_of_external_update(new_state)
 

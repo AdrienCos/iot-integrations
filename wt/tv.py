@@ -6,6 +6,8 @@ import paho.mqtt.client as mqtt
 
 import config as cfg
 
+from hardware.tv import TV
+
 
 class SIISTV(Thing):
     """A TV that logs received commands to stdout."""
@@ -32,6 +34,8 @@ class SIISTV(Thing):
                          'readOnly': False,
                      }))
 
+        self.device = TV()
+
         self.name = "mqtt_tv_1"
         self.scheduler_topic = cfg.scheduler_topic + self.name
         self.client: mqtt.Client = mqtt.Client(self.name)
@@ -51,8 +55,10 @@ class SIISTV(Thing):
             logging.debug(f"Setting state to {new_state}")
             if new_state == "ON":
                 self.state.notify_of_external_update(True)
+                self.device.on()
             elif new_state == "OFF":
                 self.state.notify_of_external_update(False)
+                self.device.off()
             else:
                 logging.error(f"Invalid state received: {new_state}")
         else:

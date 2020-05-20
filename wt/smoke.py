@@ -4,6 +4,9 @@ from webthing import (Property, SingleThing, Thing, Value,
 import logging
 import tornado.ioloop
 import random
+import config as cfg
+
+from hardware.smoke import SmokeDetector
 
 
 class AlarmEvent(Event):
@@ -40,14 +43,22 @@ class SIISSmokeDetector(Thing):
             'alarm',
             {'description': 'Smoke detected'}
         )
+
+        self.device = SmokeDetector(cfg.pin, self.activated, self.deactivated)
         self.timer: tornado.ioloop.PeriodicCallback = tornado.ioloop.PeriodicCallback(
             self.update_state,
             self.update_period
         )
         self.timer.start()
 
+    def activated(self) -> None:
+        pass
+
+    def deactivated(self) -> None:
+        pass
+
     def update_state(self) -> None:
-        new_state: bool = True if random.random() > 0.5 else False
+        new_state: bool = self.device.state
         logging.debug("State is now %d" % new_state)
         self.state.notify_of_external_update(new_state)
         if new_state:

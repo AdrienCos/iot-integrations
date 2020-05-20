@@ -3,10 +3,12 @@ from webthing import (Property, SingleThing, Thing, Value,
                       WebThingServer)
 import logging
 import tornado.ioloop
-import random
 
 import config as cfg
 import paho.mqtt.client as mqtt
+
+from hardware.thermometer import Thermometer
+from hardware.relay import Relay
 
 
 class SIISHVAC(Thing):
@@ -78,6 +80,9 @@ class SIISHVAC(Thing):
                          'readOnly': False,
                      }))
 
+        self.thermo = Thermometer()
+        self.relay = Relay(cfg.pin)
+
         self.outside_temp: float = 20
         self.heating_efficiency: float = 0.5
         self.cooling_efficiency: float = 0.5
@@ -115,6 +120,10 @@ class SIISHVAC(Thing):
     def set_mode(self, mode: str) -> None:
         logging.debug("Setting mode to %s" % mode)
         self.update_state(mode=mode)
+        if mode == "off":
+            self.relay.off()
+        else:
+            self.relay.on()
 
     def set_target(self, target: float) -> None:
         logging.debug("Setting target temp to %d" % target)
@@ -122,6 +131,7 @@ class SIISHVAC(Thing):
 
     def update_temp(self):
         "Uses the outside temp, last temp, and the state of the HVAC to calculate the new inside temp"
+        _ = self.thermo.value
         current: float = self.current_temp.get()
         state: str = self.state.get()
         outside: float = self.outside_temp

@@ -6,6 +6,8 @@ import logging
 import paho.mqtt.client as mqtt
 import config as cfg
 
+from hardware.pir import PIR
+
 
 class SIISPresence(Thing):
     """A presence sensor."""
@@ -32,6 +34,8 @@ class SIISPresence(Thing):
                          'readOnly': True,
                      }))
 
+        self.device = PIR(cfg.pin, self.activated, self.deactivated)
+
         self.name = "mqtt_presence_1"
         self.scheduler_topic = cfg.scheduler_topic + self.name
         self.client: mqtt.Client = mqtt.Client(self.name)
@@ -41,6 +45,12 @@ class SIISPresence(Thing):
 
         self.connect()
 
+    def activated(self) -> None:
+        pass
+
+    def deactivated(self) -> None:
+        pass
+
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         logging.debug("Connected to broker")
         self.client.subscribe(self.scheduler_topic)
@@ -48,6 +58,7 @@ class SIISPresence(Thing):
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         if message.topic == self.scheduler_topic:
             new_state = message.payload.decode("utf-8")
+            _ = self.device.value
             logging.debug(f"Setting state to {new_state}")
             if new_state == "ON":
                 self.state.notify_of_external_update(True)
