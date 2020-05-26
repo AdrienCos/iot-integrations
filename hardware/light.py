@@ -1,7 +1,7 @@
 from rpi_ws281x import PixelStrip
 from time import sleep
 from typing import Tuple
-from kelvin import kelvin_table
+from hardware.kelvin import kelvin_table
 
 
 MODE_RGB = 0

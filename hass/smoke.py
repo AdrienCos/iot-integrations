@@ -16,7 +16,7 @@ class SIISSmoke():
         self.client.username_pw_set(cfg.username, cfg.password)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
-        self.device: SmokeDetector = SmokeDetector(cfg.pin)
+        self.device: SmokeDetector = SmokeDetector(cfg.pin, self.activated, self.deactivated)
 
     def get_state(self) -> str:
         # Replace code here with actual device querying
@@ -24,6 +24,12 @@ class SIISSmoke():
         if state:
             return "ON"
         return "OFF"
+
+    def activated(self) -> None:
+        pass
+
+    def deactivated(self) -> None:
+        pass
 
     def start_polling(self) -> None:
         self.client.publish(self.state_topic, payload=self.get_state(), qos=1, retain=True)
