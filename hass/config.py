@@ -2,6 +2,9 @@
 
 # MQTT broker and base topics
 broker_addr: str = "hass.local"
+cafile: str = "/certs/CA.pem"
+certfile: str = "/certs/node.crt"
+keyfile: str = "/certs/node.key"
 username: str = "adrien"
 password: str = "mqttpassword"
 base_topic: str = "home/"

@@ -15,10 +15,12 @@ class SIISPresence():
         self.client: mqtt.Client = mqtt.Client(self.name)
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
-        self.client.username_pw_set(cfg.username, cfg.password)
+        self.client.tls_set(ca_certs=cfg.cafile,
+                            certfile=cfg.certfile,
+                            keyfile=cfg.keyfile)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
-        self.device: PIR(cfg.pin, self.activated, self.deactivated)
+        self.device: PIR = PIR(cfg.pin, self.activated, self.deactivated)
 
     def activated(self) -> None:
         pass

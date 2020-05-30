@@ -17,7 +17,9 @@ class SIISSensor():
         self.pressure_state_topic: str = cfg.base_topic + self.name + "/barometer" + cfg.state_suffix
         self.client: mqtt.Client = mqtt.Client(self.name)
         self.client.on_connect = self.on_connect
-        self.client.username_pw_set(cfg.username, cfg.password)
+        self.client.tls_set(ca_certs=cfg.cafile,
+                            certfile=cfg.certfile,
+                            keyfile=cfg.keyfile)
         self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
         self.thermometer = Thermometer()

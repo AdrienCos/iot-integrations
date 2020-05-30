@@ -99,9 +99,9 @@ class SIISLight(Thing):
         self.device.color = self.hex_to_tuple(v)
 
     @staticmethod
-    def hex_to_tuple(self, hex) -> Tuple[int, int, int]:
+    def hex_to_tuple(self, hex) -> Tuple[int, ...]:
         hex_noo_hash = hex[1:]
-        color: Tuple[int, int, int] = tuple(i for i in bytes.fromhex(hex_noo_hash))
+        color: Tuple[int, ...] = tuple(i for i in bytes.fromhex(hex_noo_hash))
         return color
 
 

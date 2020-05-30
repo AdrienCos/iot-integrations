@@ -3,14 +3,13 @@ from webthing import (Property, SingleThing, Thing, Value,
                       WebThingServer)
 import logging
 import tornado.ioloop
-import random
 import config as cfg
 
 from hardware.switch import Switch
 
 
 class SIISSwitch(Thing):
-    """A dimmable light that logs received commands to stdout."""
+    """A binary sensor."""
 
     def __init__(self):
         Thing.__init__(
