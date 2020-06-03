@@ -3,6 +3,7 @@ from webthing import Thing
 import logging
 import config as cfg
 import paho.mqtt.client as mqtt
+import time
 
 
 class SIISThing(Thing):
@@ -24,11 +25,11 @@ class SIISThing(Thing):
         self.client.tls_set(ca_certs=cfg.cafile,
                             certfile=cfg.certfile,
                             keyfile=cfg.keyfile)
-
         self.connect()
 
     def connect(self) -> None:
         self.client.connect(cfg.broker_addr, port=cfg.port)
+        self.client.loop_start()
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc) -> None:
         logging.debug("Connected to broker")

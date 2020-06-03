@@ -6,14 +6,17 @@ import tornado.ioloop
 import config as cfg
 
 from hardware.switch import Switch
+from siisthing import SIISThing
+import paho.mqtt.client as mqtt
 
 
-class SIISSwitch(Thing):
+class SIISSwitch(SIISThing):
     """A binary sensor."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
+            "mqtt_switch_1",
             'urn:dev:siis:switch',
             'My Switch',
             ['BinarySensor'],
@@ -44,6 +47,7 @@ class SIISSwitch(Thing):
     def update_state(self) -> None:
         new_state: bool = self.device.value
         logging.debug("Switch state is now %d" % new_state)
+        logging.debug(self.client.is_connected())
         self.state.notify_of_external_update(new_state)
 
     def cancel_update(self):
