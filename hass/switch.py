@@ -3,42 +3,41 @@ import paho.mqtt.client as mqtt
 import threading
 import config as cfg
 
+from siisthing import SIISThing
+
 from hardware.switch import Switch
 
 
-class SIISSwitch():
+class SIISSwitch(SIISThing):
     def __init__(self, name: str = "mqtt_switch_1"):
-        self.name: str = name
-        self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
-        self.state_topic: str = cfg.base_topic + self.name + cfg.state_suffix
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-        self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
+        SIISThing.__init__(self, name)
+        self.fixed_state: str
 
         self.device = Switch(cfg.pin)
 
     def get_state(self) -> str:
         # Replace code here with actual device querying
         state = self.device.value
-        if state:
-            return "ON"
-        return "OFF"
+        if self.auto_update:
+            if state:
+                return "ON"
+            return "OFF"
+        else:
+            return self.fixed_state
 
     def start_polling(self) -> None:
         self.client.publish(self.state_topic, payload=self.get_state(), qos=1, retain=True)
         threading.Timer(cfg.update_delay, self.start_polling).start()
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        print("Connected to MQTT server at %s" % (self.addr))
-        client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
+        SIISThing.on_connect(self, client, userdata, flags, rc)
         client.publish(self.state_topic, payload=self.get_state(), qos=1, retain=True)
 
-    def connect(self, addr: str = cfg.broker_addr) -> None:
-        self.addr: str = addr
-        self.client.connect(self.addr, port=cfg.port)
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            payload: str = message.payload.decode("utf-8")
+            self.auto_update = False
+            self.fixed_state = payload
 
     def start(self):
         self.connect()

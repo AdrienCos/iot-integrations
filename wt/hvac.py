@@ -100,9 +100,20 @@ class SIISHVAC(SIISThing):
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         if message.topic == self.scheduler_topic:
-            new_outside_temp = float(message.payload.decode("utf-8"))
-            logging.debug(f"Setting outside temperature to {new_outside_temp}C")
-            self.outside_temp = new_outside_temp
+            payload = message.payload.decode("utf-8")
+            try:
+                new_outside_temp = float(payload)
+                logging.debug(f"Setting outside temperature to {new_outside_temp}C")
+                self.outside_temp = new_outside_temp
+            except ValueError:
+                state = payload
+                self.auto_update = False
+                if state == "OFF":
+                    self.state.notify_of_external_update("off")
+                elif state == "HEAT":
+                    self.state.notify_of_external_update("heating")
+                elif state == "COOL":
+                    self.state.notify_of_external_update("cooling")
         else:
             logging.error(f"Message received from invalid topic: {message.topic}")
 
@@ -141,18 +152,19 @@ class SIISHVAC(SIISThing):
         if target is None:
             target = self.target_temp.get()
         current: float = self.current_temp.get()
-        if current > target and mode in ["auto", "cool"]:
-            # Set state to cooling
-            logging.debug("Setting state to cooling")
-            self.state.notify_of_external_update('cooling')
-        elif current < target and mode in ["auto", "heat"]:
-            # Set state to heating
-            logging.debug("Setting state to heating")
-            self.state.notify_of_external_update('heating')
-        else:
-            # Set state to off
-            logging.debug("Setting state to off")
-            self.state.notify_of_external_update('off')
+        if self.auto_update:
+            if current > target and mode in ["auto", "cool"]:
+                # Set state to cooling
+                logging.debug("Setting state to cooling")
+                self.state.notify_of_external_update('cooling')
+            elif current < target and mode in ["auto", "heat"]:
+                # Set state to heating
+                logging.debug("Setting state to heating")
+                self.state.notify_of_external_update('heating')
+            else:
+                # Set state to off
+                logging.debug("Setting state to off")
+                self.state.notify_of_external_update('off')
 
     def cancel_update(self):
         self.timer.stop()

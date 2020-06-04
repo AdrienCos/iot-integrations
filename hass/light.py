@@ -3,23 +3,15 @@ import paho.mqtt.client as mqtt
 import json
 import config as cfg
 
+from siisthing import SIISThing
+
 from hardware.light import RGBLight
 
 
-class SIISLight():
+class SIISLight(SIISThing):
     def __init__(self, name: str = "mqtt_light_1"):
-        self.name: str = name
+        SIISThing.__init__(self, name)
         self.last_state: dict = {"state": "OFF"}
-        self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
-        self.state_topic: str = cfg.base_topic + self.name + cfg.state_suffix
-        self.set_topic: str = cfg.base_topic + self.name + cfg.set_suffix
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-        self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
         self.device: RGBLight = RGBLight(cfg.pin)
 
@@ -55,11 +47,9 @@ class SIISLight():
         self.last_state = state
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        print("Connected to MQTT server at %s" % (self.addr))
-        self.client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
+        SIISThing.on_connect(self, client, userdata, flags, rc)
         current_state: str = json.dumps(self.last_state)
         self.client.publish(self.state_topic, current_state, qos=1, retain=True)
-        self.client.subscribe(self.set_topic)
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         # Check if this is a message that sets the light in a specific config
@@ -70,14 +60,22 @@ class SIISLight():
             # Echo it back
             response = json.dumps(message_json)
             self.client.publish(self.state_topic, response, qos=1, retain=True)
+        elif message.topic == self.scheduler_topic:
+            payload = message.payload.decode("utf-8")
+            if payload == "ON":
+                self.device.on()
+            elif payload == "OFF":
+                self.device.off()
+            elif payload == "BRI":
+                self.device.brightness = 100
+            elif payload == "TEMP":
+                self.device.temperature
+            elif payload == "COL":
+                self.device.color = (19, 2, 150)
         else:
             # This should not happen, we are not subscribed to anything else
             print("Unexpected message received, channel: %s" % message.topic)
         return
-
-    def connect(self, addr: str = cfg.broker_addr) -> None:
-        self.addr: str = addr
-        self.client.connect(self.addr, port=1883)
 
     def start(self):
         self.connect()

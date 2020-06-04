@@ -4,23 +4,18 @@ import random
 import threading
 import config as cfg
 
+from siisthing import SIISThing
+
 from hardware.barometer import Barometer
 from hardware.thermometer import Thermometer
 
 
-class SIISSensor():
+class SIISSensor(SIISThing):
     def __init__(self, name: str = "mqtt_sensor_1"):
-        self.name: str = name
-        self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
+        SIISThing.__init__(self, name)
         self.temp_state_topic: str = cfg.base_topic + self.name + "/thermometer" + cfg.state_suffix
         self.humidity_state_topic: str = cfg.base_topic + self.name + "/hygrometer" + cfg.state_suffix
         self.pressure_state_topic: str = cfg.base_topic + self.name + "/barometer" + cfg.state_suffix
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-        self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
         self.thermometer = Thermometer()
         self.barometer = Barometer()
@@ -48,14 +43,14 @@ class SIISSensor():
         threading.Timer(cfg.update_delay, self.start_polling).start()
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc) -> None:
-        print("Connected to MQTT server at %s" % (cfg.broker_addr))
-        client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
+        SIISThing.on_connect(self, client, userdata, flags, rc)
         client.publish(self.temp_state_topic, payload=self.get_temp(), qos=1, retain=True)
         client.publish(self.humidity_state_topic, payload=self.get_humidity(), qos=1, retain=True)
         client.publish(self.pressure_state_topic, payload=self.get_pressure(), qos=1, retain=True)
 
-    def connect(self, addr: str = cfg.broker_addr) -> None:
-        self.client.connect(addr, port=cfg.port)
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            print(f"Received an unexpected message from the scheduler: {message.payload.decode()}")
 
     def start(self):
         self.connect()

@@ -84,10 +84,10 @@ class SIISLock(SIISThing):
         if message.topic == self.scheduler_topic:
             # Stop the timer to prevent automatic changes
             payload: str = message.payload.decode()
-            if payload == "LOCK":
+            if payload == "ON":
                 self.perform_action("lock")
                 # self.state.notify_of_external_update("locked")
-            elif payload == "UNLOCK":
+            elif payload == "OFF":
                 self.perform_action("unlock")
                 # self.state.notify_of_external_update("unlocked")
 

@@ -3,13 +3,15 @@ import paho.mqtt.client as mqtt
 import threading
 import config as cfg
 
+from siisthing import SIISThing
+
 from hardware.thermometer import Thermometer
 from hardware.relay import Relay
 
 
-class SIISHVAC():
+class SIISHVAC(SIISThing):
     def __init__(self, name: str = "mqtt_hvac_1"):
-        self.name: str = name
+        SIISThing.__init__(self, name)
         self.last_mode: str = ""
         self.last_action: str = "off"
         self.last_target: float = 0
@@ -18,21 +20,13 @@ class SIISHVAC():
         self.thermal_cond: float = 0.05  # 1/min
         self.heating_efficiency: float = 0.5  # C/min
         self.cooling_efficiency: float = 0.5  # C/min
-        self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
+
         self.temp_state_topic: str = cfg.base_topic + self.name + "/temperature" + cfg.state_suffix
         self.action_state_topic: str = cfg.base_topic + self.name + "/action" + cfg.state_suffix
         self.mode_set_topic: str = cfg.base_topic + self.name + "/mode" + cfg.set_suffix
         self.mode_state_topic: str = cfg.base_topic + self.name + "/mode" + cfg.state_suffix
         self.target_temperature_set: str = cfg.base_topic + self.name + "/target_temperature" + cfg.set_suffix
         self.target_temperature_state: str = cfg.base_topic + self.name + "/target_temperature" + cfg.state_suffix
-        self.scheduler_topic: str = cfg.scheduler_topic + self.name
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-        self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
         self.thermometer: Thermometer = Thermometer()
         self.heater_cooler: Relay = Relay(cfg.pin)
@@ -64,8 +58,9 @@ class SIISHVAC():
             payload = "off"
         else:
             payload = "idle"
-        self.set_action(payload)
-        self.client.publish(self.action_state_topic, payload=self.last_action, qos=1, retain=True)
+        if self.auto_update:
+            self.set_action(payload)
+            self.client.publish(self.action_state_topic, payload=self.last_action, qos=1, retain=True)
         threading.Timer(cfg.update_delay, self.start_polling).start()
 
     def set_action(self, action: str) -> None:
@@ -76,8 +71,7 @@ class SIISHVAC():
         self.last_action = action
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        print("Connected to MQTT server at %s" % (self.addr))
-        self.client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
+        SIISThing.on_connect(self, client, userdata, flags, rc)
         self.client.subscribe(self.mode_set_topic)
         self.client.subscribe(self.target_temperature_set)
         self.client.subscribe(self.scheduler_topic)
@@ -101,18 +95,28 @@ class SIISHVAC():
             response = mode_setting
             self.client.publish(self.mode_state_topic, response, qos=1, retain=True)
         elif message.topic == self.scheduler_topic:
-            # Read the new outside temp
-            temp = float(message.payload.decode("utf-8"))
-            print(f"Setting outside temp to {temp}C")
-            self.outside_temp = temp
+            # Detemine if it is a temp or mode update
+            payload = message.payload.decode("utf-8")
+            try:
+                # Read the new outside temp
+                temp: float = float(payload)
+                print(f"Setting outside temp to {temp}C")
+                self.outside_temp = temp
+            except ValueError:
+                # Set the new mode, disable auto_update
+                self.auto_update = False
+                state: str = payload
+                if state == "OFF":
+                    self.set_action("off")
+                elif state == "HEAT":
+                    self.set_action("heating")
+                elif state == "COOL":
+                    self.set_action("cooling")
+
         else:
             # This should not happen, we are not subscribed to anything else
             print("Unexpected message received, channel: %s" % message.topic)
         pass
-
-    def connect(self, addr: str = cfg.broker_addr) -> None:
-        self.addr: str = addr
-        self.client.connect(self.addr, port=cfg.port)
 
     def start(self):
         self.connect()

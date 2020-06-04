@@ -2,31 +2,23 @@
 import paho.mqtt.client as mqtt
 import config as cfg
 
+from siisthing import SIISThing
+
 from hardware.servo import ServoMotor
 
 
-class SIISLock():
+class SIISLock(SIISThing):
     def __init__(self, name: str = "mqtt_lock_1"):
-        self.name: str = name
+        SIISThing.__init__(self, name)
         self.last_state: str = ""
-        self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
-        self.state_topic: str = cfg.base_topic + self.name + cfg.state_suffix
-        self.set_topic: str = cfg.base_topic + self.name + cfg.set_suffix
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-        self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
 
         self.device: ServoMotor = ServoMotor(cfg.pin)
+        self.connect()
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        print("Connected to MQTT server at %s" % (self.addr))
-        client.publish(self.available_topic, payload=cfg.online_payload, qos=1, retain=True)
-        client.publish(self.state_topic, payload=self.last_state, qos=1, retain=True)
-        client.subscribe(self.set_topic)
+        # Extend the on_connect method of SIISThing
+        SIISThing.on_connect(self, client, userdata, flags, rc)
+        self.client.publish(self.state_topic, payload=self.last_state, qos=1, retain=True)
 
     def set_state(self, state: str) -> None:
         if state == "ON":
@@ -39,8 +31,8 @@ class SIISLock():
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         # Check if this is a message that sets the lock
-        if message.topic == self.set_topic:
-            # Read the target temp
+        if message.topic == self.set_topic or message.topic == self.scheduler_topic:
+            # Read the target state
             lock: str = message.payload.decode("utf-8")
             print("Setting the lock to %s" % lock)
             self.last_state = lock
@@ -51,10 +43,6 @@ class SIISLock():
             # This should not happen, we are not subscribed to anything else
             print("Unexpected message received, channel: %s" % message.topic)
         pass
-
-    def connect(self, addr: str = cfg.broker_addr) -> mqtt.Client:
-        self.addr: str = addr
-        self.client.connect(addr, port=1883)
 
     def start(self):
         self.connect()
