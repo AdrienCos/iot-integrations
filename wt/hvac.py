@@ -1,5 +1,5 @@
 from __future__ import division
-from webthing import (Property, SingleThing, Thing, Value,
+from webthing import (Property, SingleThing, Value,
                       WebThingServer)
 import logging
 import tornado.ioloop
@@ -7,16 +7,19 @@ import tornado.ioloop
 import config as cfg
 import paho.mqtt.client as mqtt
 
+from siisthing import SIISThing
+
 from hardware.thermometer import Thermometer
 from hardware.relay import Relay
 
 
-class SIISHVAC(Thing):
+class SIISHVAC(SIISThing):
     """A HVAC that logs received commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
+            "mqtt_hvac_1",
             'urn:dev:siis:hvac',
             'My HVAC',
             ['Thermostat'],
@@ -87,15 +90,6 @@ class SIISHVAC(Thing):
         self.heating_efficiency: float = 0.5
         self.cooling_efficiency: float = 0.5
         self.thermal_cond: float = 0.05
-        self.name = "mqtt_hvac_1"
-        self.scheduler_topic = cfg.scheduler_topic + self.name
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-        self.connect()
 
         self.update_period: float = cfg.update_delay * 1000.0
         self.timer: tornado.ioloop.PeriodicCallback = tornado.ioloop.PeriodicCallback(
@@ -103,13 +97,6 @@ class SIISHVAC(Thing):
             self.update_period
         )
         self.timer.start()
-
-    def connect(self):
-        self.client.connect(cfg.broker_addr, port=cfg.port)
-
-    def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        logging.debug("Connected to broker")
-        self.client.subscribe(self.scheduler_topic)
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         if message.topic == self.scheduler_topic:

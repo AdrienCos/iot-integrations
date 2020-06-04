@@ -6,15 +6,18 @@ import logging
 import paho.mqtt.client as mqtt
 import config as cfg
 
+from siisthing import SIISThing
+
 from hardware.pir import PIR
 
 
-class SIISPresence(Thing):
+class SIISPresence(SIISThing):
     """A presence sensor."""
 
     def __init__(self):
         Thing.__init__(
             self,
+            "mqtt_presence_1",
             'urn:dev:siis:presence',
             'My Presence Sensor',
             ['BinarySensor'],
@@ -37,24 +40,12 @@ class SIISPresence(Thing):
         self.device = PIR(cfg.pin, self.activated, self.deactivated)
 
         self.name = "mqtt_presence_1"
-        self.scheduler_topic = cfg.scheduler_topic + self.name
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-        self.connect()
 
     def activated(self) -> None:
         pass
 
     def deactivated(self) -> None:
         pass
-
-    def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        logging.debug("Connected to broker")
-        self.client.subscribe(self.scheduler_topic)
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         if message.topic == self.scheduler_topic:
@@ -69,9 +60,6 @@ class SIISPresence(Thing):
                 logging.error(f"Invalid state received: {new_state}")
         else:
             logging.error(f"Message received from invalid topic: {message.topic}")
-
-    def connect(self):
-        self.client.connect(cfg.broker_addr, port=cfg.port)
 
 
 def run_server():

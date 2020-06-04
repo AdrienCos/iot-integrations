@@ -4,17 +4,18 @@ from webthing import (Property, SingleThing, Thing, Value,
 import logging
 import paho.mqtt.client as mqtt
 
-import config as cfg
+from siisthing import SIISThing
 
 from hardware.tv import TV
 
 
-class SIISTV(Thing):
+class SIISTV(SIISThing):
     """A TV that logs received commands to stdout."""
 
     def __init__(self):
         Thing.__init__(
             self,
+            "mqtt_tv_1",
             'urn:dev:siis:tv',
             'My TV',
             ['OnOffSwitch'],
@@ -36,21 +37,6 @@ class SIISTV(Thing):
 
         self.device = TV()
 
-        self.name = "mqtt_tv_1"
-        self.scheduler_topic = cfg.scheduler_topic + self.name
-        self.client: mqtt.Client = mqtt.Client(self.name)
-        self.client.on_connect = self.on_connect
-        self.client.on_message = self.on_message
-        self.client.tls_set(ca_certs=cfg.cafile,
-                            certfile=cfg.certfile,
-                            keyfile=cfg.keyfile)
-
-        self.connect()
-
-    def on_connect(self, client: mqtt.Client, userdata, flags, rc):
-        logging.debug("Connected to MQTT broker")
-        self.client.subscribe(self.scheduler_topic)
-
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         if message.topic == self.scheduler_topic:
             new_state = message.payload.decode("utf-8")
@@ -65,9 +51,6 @@ class SIISTV(Thing):
                 logging.error(f"Invalid state received: {new_state}")
         else:
             logging.error(f"Message received from invalid topic: {message.topic}")
-
-    def connect(self):
-        self.client.connect(cfg.broker_addr, port=cfg.port)
 
     def set_state(self, state: bool) -> None:
         logging.debug(f"TV is now {'ON' if state else 'OFF'}")

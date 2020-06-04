@@ -2,17 +2,22 @@ from __future__ import division
 from webthing import (Property, SingleThing, Thing, Value,
                       WebThingServer)
 import logging
+import paho.mqtt.client as mqtt
+
 import config as cfg
+
+from siisthing import SIISThing
 
 from hardware.relay import Relay
 
 
-class SIISOutlet(Thing):
+class SIISOutlet(SIISThing):
     """A lock that logs received commands to stdout."""
 
     def __init__(self):
         Thing.__init__(
             self,
+            "mqtt_outlet_1",
             'urn:dev:siis:outlet',
             'My Outlet',
             ['SmartPlug'],
@@ -32,6 +37,16 @@ class SIISOutlet(Thing):
                      }))
 
         self.device = Relay(cfg.pin)
+
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            # Stop the timer to prevent automatic changes
+            self.auto_update = False
+            payload: str = message.payload.decode()
+            if payload == "ON":
+                self.state.notify_of_external_update(True)
+            elif payload == "OFF":
+                self.state.notify_of_external_update(False)
 
     def set_value(self, value: bool) -> None:
         logging.debug(f"Outlet set to {'ON' if value else 'OFF'}")

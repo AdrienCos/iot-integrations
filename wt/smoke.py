@@ -5,7 +5,9 @@ import logging
 import tornado.ioloop
 import random
 import config as cfg
+import paho.mqtt.client as mqtt
 
+from siisthing import SIISThing
 from hardware.smoke import SmokeDetector
 
 
@@ -15,12 +17,13 @@ class AlarmEvent(Event):
         logging.debug("Alarm event")
 
 
-class SIISSmokeDetector(Thing):
+class SIISSmokeDetector(SIISThing):
     """A smoke detector that logs detected events commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
+            "mqtt_smoke_1",
             'urn:dev:siis:smoke',
             'My Smoke Detector',
             ['Alarm'],
@@ -51,6 +54,18 @@ class SIISSmokeDetector(Thing):
         )
         self.timer.start()
 
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            payload: str = message.payload.decode()
+            self.auto_update = False
+            if payload == "ON":
+                self.state.notify_of_external_update(True)
+                self.add_event(AlarmEvent(self))
+            elif payload == "OFF":
+                self.state.notify_of_external_update(False)
+            else:
+                logging.error(f"Received unexpected message: {payload}")
+
     def activated(self) -> None:
         pass
 
@@ -60,9 +75,10 @@ class SIISSmokeDetector(Thing):
     def update_state(self) -> None:
         new_state: bool = self.device.state
         logging.debug("State is now %d" % new_state)
-        self.state.notify_of_external_update(new_state)
-        if new_state:
-            self.add_event(AlarmEvent(self))
+        if self.auto_update:
+            self.state.notify_of_external_update(new_state)
+            if new_state:
+                self.add_event(AlarmEvent(self))
 
 
 def run_server():

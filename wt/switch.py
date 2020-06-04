@@ -1,5 +1,5 @@
 from __future__ import division
-from webthing import (Property, SingleThing, Thing, Value,
+from webthing import (Property, SingleThing, Value,
                       WebThingServer)
 import logging
 import tornado.ioloop
@@ -44,11 +44,22 @@ class SIISSwitch(SIISThing):
         )
         self.timer.start()
 
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            # Stop the timer to prevent automatic changes
+            self.auto_update = False
+            payload: str = message.payload.decode()
+            if payload == "ON":
+                self.state.notify_of_external_update(True)
+            elif payload == "OFF":
+                self.state.notify_of_external_update(False)
+
     def update_state(self) -> None:
         new_state: bool = self.device.value
         logging.debug("Switch state is now %d" % new_state)
         logging.debug(self.client.is_connected())
-        self.state.notify_of_external_update(new_state)
+        if self.auto_update:
+            self.state.notify_of_external_update(new_state)
 
     def cancel_update(self):
         self.timer.stop()

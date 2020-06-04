@@ -3,7 +3,6 @@ from webthing import Thing
 import logging
 import config as cfg
 import paho.mqtt.client as mqtt
-import time
 
 
 class SIISThing(Thing):
@@ -17,6 +16,7 @@ class SIISThing(Thing):
             type_=capabilities,
             description=desc
         )
+        self.auto_update: bool = True    # Whether the device should use the hardware polling to update itself
         self.name: str = mqtt_name
         self.scheduler_topic: str = cfg.scheduler_topic + self.name
         self.client: mqtt.Client = mqtt.Client(self.name)

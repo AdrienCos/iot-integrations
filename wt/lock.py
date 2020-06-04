@@ -1,10 +1,13 @@
 from __future__ import division
-from webthing import (Action, Property, SingleThing, Thing, Value,
+from webthing import (Action, Property, Thing, SingleThing, Value,
                       WebThingServer)
 import logging
 import uuid
+import paho.mqtt.client as mqtt
 
 import config as cfg
+
+from siisthing import SIISThing
 
 from hardware.servo import ServoMotor
 
@@ -30,12 +33,13 @@ class UnlockAction(GenericLockAction):
         GenericLockAction.__init__(self, "unlocked", thing, input_)
 
 
-class SIISLock(Thing):
+class SIISLock(SIISThing):
     """A lock that logs received commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
+            "mqtt_lock_1",
             'urn:dev:siis:lock',
             'My Lock',
             ['Lock'],
@@ -75,6 +79,17 @@ class SIISLock(Thing):
         )
 
         self.device = ServoMotor(cfg.pin)
+
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            # Stop the timer to prevent automatic changes
+            payload: str = message.payload.decode()
+            if payload == "LOCK":
+                self.perform_action("lock")
+                # self.state.notify_of_external_update("locked")
+            elif payload == "UNLOCK":
+                self.perform_action("unlock")
+                # self.state.notify_of_external_update("unlocked")
 
     def set_state(self, state: str) -> None:
         if state == "unlocked":

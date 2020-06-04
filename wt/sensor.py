@@ -5,17 +5,21 @@ import logging
 import random
 import tornado.ioloop
 import config as cfg
+import paho.mqtt.client as mqtt
+
+from siisthing import SIISThing
 
 from hardware.thermometer import Thermometer
 from hardware.barometer import Barometer
 
 
-class SIISThermometer(Thing):
+class SIISThermometer(SIISThing):
     """A thermometer that logs detected events commands to stdout."""
 
     def __init__(self):
         Thing.__init__(
             self,
+            "mqtt_thermometer_1",
             'urn:dev:siis:thermometer',
             'My Thermometer',
             ['TemperatureSensor'],
@@ -44,18 +48,24 @@ class SIISThermometer(Thing):
         )
         self.timer.start()
 
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            # The thermometer should not receive anything from the scheduler
+            logging.error(f"Reveiced an unexpected message from the scheduler: {message.payload.decode()}")
+
     def update_state(self) -> None:
         new_temp: float = self.device.value
         logging.debug("Temperature is now %0.1fC" % new_temp)
         self.temp.notify_of_external_update(new_temp)
 
 
-class SIISBarometer(Thing):
+class SIISBarometer(SIISThing):
     """A barometer that logs detected events commands to stdout."""
 
     def __init__(self):
         Thing.__init__(
             self,
+            "mqtt_barometer_1",
             'urn:dev:siis:barometer',
             'My Barometer',
             ['MultiLevelSensor'],
@@ -87,6 +97,11 @@ class SIISBarometer(Thing):
         )
         self.timer.start()
 
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            # The barometer should not receive anything from the scheduler
+            logging.error(f"Reveiced an unexpected message from the scheduler: {message.payload.decode()}")
+
     def update_state(self) -> None:
         new_pressure: float = self.device.value
         logging.debug("Pressure is now %0.1fhPa" % new_pressure)
@@ -99,6 +114,7 @@ class SIISHygrometer(Thing):
     def __init__(self):
         Thing.__init__(
             self,
+            "mqtt_hygrometer_1",
             'urn:dev:siis:hygrometer',
             'My Hygrometer',
             ['MultiLevelSensor'],
@@ -127,6 +143,11 @@ class SIISHygrometer(Thing):
             self.update_period
         )
         self.timer.start()
+
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            # The hygrometer should not receive anything from the scheduler
+            logging.error(f"Reveiced an unexpected message from the scheduler: {message.payload.decode()}")
 
     def update_state(self) -> None:
         _ = self.device.value

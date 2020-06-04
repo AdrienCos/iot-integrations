@@ -3,27 +3,33 @@ from webthing import (Property, SingleThing, Thing, Value,
                       WebThingServer)
 import logging
 import config as cfg
-
 from typing import Tuple
+
+import paho.mqtt.client as mqtt
+
+from siisthing import SIISThing
+
 from hardware.light import RGBLight
 
 
-class SIISLight(Thing):
+class SIISLight(SIISThing):
     """A dimmable light that logs received commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
+            "mqtt_light_1",
             'urn:dev:siis:light',
             'My Lamp',
             ['OnOffSwitch', 'Light'],
             'A web connected lamp'
         )
 
+        self.on_state: Value = Value(False, self.set_state)
         self.add_property(
             Property(self,
                      'on',
-                     Value(True, lambda v: logging.debug('On-State is now %s' % v)),
+                     self.on_state,
                      metadata={
                          '@type': 'OnOffProperty',
                          'title': 'On/Off',
@@ -31,10 +37,11 @@ class SIISLight(Thing):
                          'description': 'Whether the lamp is turned on',
                      }))
 
+        self.brightness_state: Value = Value(100, self.set_brightness)
         self.add_property(
             Property(self,
                      'brightness',
-                     Value(100, self.set_brightness),
+                     self.brightness_state,
                      metadata={
                          '@type': 'BrightnessProperty',
                          'title': 'Brightness',
@@ -45,20 +52,23 @@ class SIISLight(Thing):
                          'unit': 'percent',
                      }))
 
+        self.color_state: Value = Value("#FFFFFF", self.set_color)
         self.add_property(
             Property(self,
                      'color',
-                     Value("#FFFFFF", self.set_color),
+                     self.color_state,
                      metadata={
                          '@type': 'ColorProperty',
                          'title': 'Color',
                          'type': 'string',
                          'description': 'The color of the light in hex RGB',
                      }))
+
+        self.temperature_state: Value = Value(2700, self.set_temperature)
         self.add_property(
             Property(self,
                      'temperature',
-                     Value(2700, self.set_temperature),
+                     self.temperature_state,
                      metadata={
                          '@type': 'ColorTemperatureProperty',
                          'title': 'Temperature',
@@ -69,10 +79,11 @@ class SIISLight(Thing):
                          'unit': 'kelvin',
                      }))
 
+        self.color_mode_state: Value = Value("temperature", lambda v: logging.debug("Color mode is now %s" % v))
         self.add_property(
             Property(self,
                      'colorMode',
-                     Value("temperature", lambda v: logging.debug("Color mode is now %s" % v)),
+                     self.color_mode_state,
                      metadata={
                          '@type': 'ColorModeProperty',
                          'title': 'Color Mode',
@@ -84,18 +95,39 @@ class SIISLight(Thing):
 
         self.device = RGBLight(cfg.pin)
 
+    def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        if message.topic == self.scheduler_topic:
+            payload: str = message.payload.decode()
+            if payload == "ON":
+                self.on_state.notify_of_external_update(True)
+            elif payload == "OFF":
+                self.on_state.notify_of_external_update(False)
+            elif payload == "BRI":
+                self.brightness_state.notify_of_external_update(100)
+            elif payload == "TEMP":
+                self.temperature_state.notify_of_external_update(3400)
+            elif payload == "COL":
+                self.color_state.notify_of_external_update("#130296")
+
+    def set_state(self, v: bool):
+        logging.debug("On-state is now %d" % v)
+        if v:
+            self.device.on()
+        else:
+            self.device.off()
+
     def set_brightness(self, v):
         logging.debug("Brightness is now %d" % v)
         self.device.brightness = v
 
     def set_temperature(self, v):
         logging.debug("Temperature is now %d" % v)
-        self.properties['colorMode'].value.notify_of_external_update('temperature')
+        self.color_mode_state.notify_of_external_update('temperature')
         self.device.temperature = v
 
     def set_color(self, v):
         logging.debug("Color is now %s" % v)
-        self.properties['colorMode'].value.notify_of_external_update('color')
+        self.color_mode_state.notify_of_external_update('color')
         self.device.color = self.hex_to_tuple(v)
 
     @staticmethod
