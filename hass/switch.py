@@ -38,6 +38,9 @@ class SIISSwitch(SIISThing):
             payload: str = message.payload.decode("utf-8")
             self.auto_update = False
             self.fixed_state = payload
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def start(self):
         self.connect()

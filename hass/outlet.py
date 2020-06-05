@@ -11,17 +11,7 @@ class SIISOutlet(SIISThing):
     def __init__(self, name: str = "mqtt_outlet_1"):
         self.name: str = name
         SIISThing.__init__(self, name)
-        self.last_state: str = ""
-        # self.available_topic: str = cfg.base_topic + self.name + cfg.available_suffix
-        # self.state_topic: str = cfg.base_topic + self.name + cfg.state_suffix
-        # self.set_topic: str = cfg.base_topic + self.name + cfg.set_suffix
-        # self.client: mqtt.Client = mqtt.Client(self.name)
-        # self.client.on_connect = self.on_connect
-        # self.client.on_message = self.on_message
-        # self.client.tls_set(ca_certs=cfg.cafile,
-        #                     certfile=cfg.certfile,
-        #                     keyfile=cfg.keyfile)
-        # self.client.will_set(self.available_topic, payload=cfg.offline_payload, qos=1, retain=True)
+        self.last_state: str = "OFF"
 
         self.device: Relay = Relay(cfg.pin)
 
@@ -40,9 +30,8 @@ class SIISOutlet(SIISThing):
             response = outlet
             client.publish(self.state_topic, response, qos=1, retain=True)
         else:
-            # This should not happen, we are not subscribed to anything else
-            print("Unexpected message received, channel: %s" % message.topic)
-        pass
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def set_state(self, state: str) -> None:
         if state == "ON":

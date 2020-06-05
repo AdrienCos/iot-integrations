@@ -73,8 +73,8 @@ class SIISLight(SIISThing):
             elif payload == "COL":
                 self.device.color = (19, 2, 150)
         else:
-            # This should not happen, we are not subscribed to anything else
-            print("Unexpected message received, channel: %s" % message.topic)
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
         return
 
     def start(self):

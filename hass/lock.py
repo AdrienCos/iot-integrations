@@ -40,9 +40,8 @@ class SIISLock(SIISThing):
             response = lock
             client.publish(self.state_topic, response, qos=1, retain=True)
         else:
-            # This should not happen, we are not subscribed to anything else
-            print("Unexpected message received, channel: %s" % message.topic)
-        pass
+            # Pass the message down
+            SIISThing.on_message(self, client, userdata, message)
 
     def start(self):
         self.connect()

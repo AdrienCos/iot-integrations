@@ -36,9 +36,8 @@ class SIISTV(SIISThing):
             response = tv_state
             self.client.publish(self.state_topic, response, qos=1, retain=True)
         else:
-            # This should not happen, we are not subscribed to anything else
-            print("Unexpected message received, channel: %s" % message.topic)
-        pass
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def set_state(self, state: str) -> None:
         if state == "ON":

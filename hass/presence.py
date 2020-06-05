@@ -27,7 +27,8 @@ class SIISPresence(SIISThing):
             self.last_state = state
             self.client.publish(self.state_topic, payload=state, qos=1, retain=True)
         else:
-            print("Unexpected message received, channel: %s" % message.topic)
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
         SIISThing.on_connect(self, client, userdata, flags, rc)

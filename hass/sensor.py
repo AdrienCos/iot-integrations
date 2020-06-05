@@ -51,6 +51,9 @@ class SIISSensor(SIISThing):
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
         if message.topic == self.scheduler_topic:
             print(f"Received an unexpected message from the scheduler: {message.payload.decode()}")
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def start(self):
         self.connect()

@@ -44,6 +44,8 @@ class SIISSmoke(SIISThing):
             payload = message.payload.decode("utf-8")
             self.auto_update = False
             self.fixed_state = payload
+        else:
+            SIISThing.on_message(self, client, userdata, message)
 
     def start(self):
         self.connect()

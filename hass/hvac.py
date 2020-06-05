@@ -114,9 +114,8 @@ class SIISHVAC(SIISThing):
                     self.set_action("cooling")
 
         else:
-            # This should not happen, we are not subscribed to anything else
-            print("Unexpected message received, channel: %s" % message.topic)
-        pass
+            # Pass the message down
+            SIISThing.on_message(self, client, userdata, message)
 
     def start(self):
         self.connect()
