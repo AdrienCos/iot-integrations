@@ -59,7 +59,8 @@ class SIISPresence(SIISThing):
             else:
                 logging.error(f"Invalid state received: {new_state}")
         else:
-            logging.error(f"Message received from invalid topic: {message.topic}")
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
 
 def run_server():

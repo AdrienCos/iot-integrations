@@ -53,6 +53,9 @@ class SIISSwitch(SIISThing):
                 self.state.notify_of_external_update(True)
             elif payload == "OFF":
                 self.state.notify_of_external_update(False)
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def update_state(self) -> None:
         new_state: bool = self.device.value

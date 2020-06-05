@@ -108,6 +108,9 @@ class SIISLight(SIISThing):
                 self.temperature_state.notify_of_external_update(3400)
             elif payload == "COL":
                 self.color_state.notify_of_external_update("#130296")
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def set_state(self, v: bool):
         logging.debug("On-state is now %d" % v)

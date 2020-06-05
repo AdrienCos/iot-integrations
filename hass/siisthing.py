@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 
 import config as cfg
 
-from intruder_node import IntruderNode
+from intruder.intruder_node import IntruderNode
 
 
 class SIISThing():

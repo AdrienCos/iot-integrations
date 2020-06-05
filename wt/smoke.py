@@ -1,9 +1,8 @@
 from __future__ import division
-from webthing import (Property, SingleThing, Thing, Value,
+from webthing import (Property, SingleThing, Value,
                       WebThingServer, Event)
 import logging
 import tornado.ioloop
-import random
 import config as cfg
 import paho.mqtt.client as mqtt
 
@@ -65,6 +64,9 @@ class SIISSmokeDetector(SIISThing):
                 self.state.notify_of_external_update(False)
             else:
                 logging.error(f"Received unexpected message: {payload}")
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def activated(self) -> None:
         pass

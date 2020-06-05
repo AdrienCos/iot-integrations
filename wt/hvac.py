@@ -115,7 +115,8 @@ class SIISHVAC(SIISThing):
                 elif state == "COOL":
                     self.state.notify_of_external_update("cooling")
         else:
-            logging.error(f"Message received from invalid topic: {message.topic}")
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def set_mode(self, mode: str) -> None:
         logging.debug("Setting mode to %s" % mode)

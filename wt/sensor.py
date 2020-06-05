@@ -52,6 +52,9 @@ class SIISThermometer(SIISThing):
         if message.topic == self.scheduler_topic:
             # The thermometer should not receive anything from the scheduler
             logging.error(f"Reveiced an unexpected message from the scheduler: {message.payload.decode()}")
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def update_state(self) -> None:
         new_temp: float = self.device.value
@@ -101,6 +104,9 @@ class SIISBarometer(SIISThing):
         if message.topic == self.scheduler_topic:
             # The barometer should not receive anything from the scheduler
             logging.error(f"Reveiced an unexpected message from the scheduler: {message.payload.decode()}")
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def update_state(self) -> None:
         new_pressure: float = self.device.value
@@ -148,6 +154,9 @@ class SIISHygrometer(Thing):
         if message.topic == self.scheduler_topic:
             # The hygrometer should not receive anything from the scheduler
             logging.error(f"Reveiced an unexpected message from the scheduler: {message.payload.decode()}")
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def update_state(self) -> None:
         _ = self.device.value

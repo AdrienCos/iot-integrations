@@ -50,7 +50,8 @@ class SIISTV(SIISThing):
             else:
                 logging.error(f"Invalid state received: {new_state}")
         else:
-            logging.error(f"Message received from invalid topic: {message.topic}")
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def set_state(self, state: bool) -> None:
         logging.debug(f"TV is now {'ON' if state else 'OFF'}")

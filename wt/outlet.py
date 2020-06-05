@@ -47,6 +47,9 @@ class SIISOutlet(SIISThing):
                 self.state.notify_of_external_update(True)
             elif payload == "OFF":
                 self.state.notify_of_external_update(False)
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def set_value(self, value: bool) -> None:
         logging.debug(f"Outlet set to {'ON' if value else 'OFF'}")

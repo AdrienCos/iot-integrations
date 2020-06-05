@@ -6,7 +6,6 @@ import uuid
 import paho.mqtt.client as mqtt
 
 import config as cfg
-
 from siisthing import SIISThing
 
 from hardware.servo import ServoMotor
@@ -90,6 +89,9 @@ class SIISLock(SIISThing):
             elif payload == "OFF":
                 self.perform_action("unlock")
                 # self.state.notify_of_external_update("unlocked")
+        else:
+            # Pass it down
+            SIISThing.on_message(self, client, userdata, message)
 
     def set_state(self, state: str) -> None:
         if state == "unlocked":
