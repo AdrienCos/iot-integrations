@@ -69,7 +69,7 @@ class SIISLight(SIISThing):
             elif payload == "BRI":
                 self.device.brightness = 100
             elif payload == "TEMP":
-                self.device.temperature
+                self.device.temperature = 3700
             elif payload == "COL":
                 self.device.color = (19, 2, 150)
         else:
