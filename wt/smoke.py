@@ -22,7 +22,7 @@ class SIISSmokeDetector(SIISThing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "mqtt_smoke_1",
+            "smoke_1",
             'urn:dev:siis:smoke',
             'My Smoke Detector',
             ['Alarm'],

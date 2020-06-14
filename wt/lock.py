@@ -38,7 +38,7 @@ class SIISLock(SIISThing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "mqtt_lock_1",
+            "lock_1",
             'urn:dev:siis:lock',
             'My Lock',
             ['Lock'],

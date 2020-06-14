@@ -15,7 +15,7 @@ class SIISTV(SIISThing):
     def __init__(self):
         Thing.__init__(
             self,
-            "mqtt_tv_1",
+            "tv_1",
             'urn:dev:siis:tv',
             'My TV',
             ['OnOffSwitch'],

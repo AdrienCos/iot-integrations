@@ -19,7 +19,7 @@ class SIISHVAC(SIISThing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "mqtt_hvac_1",
+            "hvac_1",
             'urn:dev:siis:hvac',
             'My HVAC',
             ['Thermostat'],

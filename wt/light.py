@@ -18,7 +18,7 @@ class SIISLight(SIISThing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "mqtt_light_1",
+            "light_1",
             'urn:dev:siis:light',
             'My Lamp',
             ['OnOffSwitch', 'Light'],

@@ -16,7 +16,7 @@ class SIISSwitch(SIISThing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "mqtt_switch_1",
+            "switch_1",
             'urn:dev:siis:switch',
             'My Switch',
             ['BinarySensor'],

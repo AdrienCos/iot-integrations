@@ -17,7 +17,7 @@ class SIISPresence(SIISThing):
     def __init__(self):
         Thing.__init__(
             self,
-            "mqtt_presence_1",
+            "presence_1",
             'urn:dev:siis:presence',
             'My Presence Sensor',
             ['BinarySensor'],

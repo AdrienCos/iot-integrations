@@ -17,7 +17,7 @@ class SIISOutlet(SIISThing):
     def __init__(self):
         Thing.__init__(
             self,
-            "mqtt_outlet_1",
+            "outlet_1",
             'urn:dev:siis:outlet',
             'My Outlet',
             ['SmartPlug'],

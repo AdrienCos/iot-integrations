@@ -19,7 +19,7 @@ class SIISThermometer(SIISThing):
     def __init__(self):
         Thing.__init__(
             self,
-            "mqtt_sensor_1",
+            "sensor_1",
             'urn:dev:siis:thermometer',
             'My Thermometer',
             ['TemperatureSensor'],
