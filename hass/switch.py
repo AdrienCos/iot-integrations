@@ -9,7 +9,7 @@ from hardware.switch import Switch
 
 
 class SIISSwitch(SIISThing):
-    def __init__(self, name: str = "mqtt_switch_1"):
+    def __init__(self, name: str = "switch_1"):
         SIISThing.__init__(self, name)
         self.fixed_state: str
 

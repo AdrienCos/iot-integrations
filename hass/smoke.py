@@ -9,7 +9,7 @@ from hardware.smoke import SmokeDetector
 
 
 class SIISSmoke(SIISThing):
-    def __init__(self, name: str = "mqtt_smoke_1"):
+    def __init__(self, name: str = "smoke_1"):
         SIISThing.__init__(self, name)
         self.fixed_state: str
 

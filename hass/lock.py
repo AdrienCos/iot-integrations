@@ -8,7 +8,7 @@ from hardware.servo import ServoMotor
 
 
 class SIISLock(SIISThing):
-    def __init__(self, name: str = "mqtt_lock_1"):
+    def __init__(self, name: str = "lock_1"):
         SIISThing.__init__(self, name)
         self.last_state: str = ""
 

@@ -10,7 +10,7 @@ from hardware.relay import Relay
 
 
 class SIISHVAC(SIISThing):
-    def __init__(self, name: str = "mqtt_hvac_1"):
+    def __init__(self, name: str = "hvac_1"):
         SIISThing.__init__(self, name)
         self.last_mode: str = ""
         self.last_action: str = "off"

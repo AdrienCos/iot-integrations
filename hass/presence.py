@@ -8,7 +8,7 @@ from hardware.pir import PIR
 
 
 class SIISPresence(SIISThing):
-    def __init__(self, name: str = "mqtt_presence_1"):
+    def __init__(self, name: str = "presence_1"):
         SIISThing.__init__(self, name)
         self.last_state: str = "OFF"
 

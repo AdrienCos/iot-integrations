@@ -8,7 +8,7 @@ from hardware.tv import TV
 
 
 class SIISTV(SIISThing):
-    def __init__(self, name: str = "mqtt_tv_1"):
+    def __init__(self, name: str = "tv_1"):
         SIISThing.__init__(self, name)
         self.last_state: str = ""
 

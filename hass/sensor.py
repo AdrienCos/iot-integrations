@@ -11,7 +11,7 @@ from hardware.thermometer import Thermometer
 
 
 class SIISSensor(SIISThing):
-    def __init__(self, name: str = "mqtt_sensor_1"):
+    def __init__(self, name: str = "sensor_1"):
         SIISThing.__init__(self, name)
         self.temp_state_topic: str = cfg.base_topic + self.name + "/thermometer" + cfg.state_suffix
         self.humidity_state_topic: str = cfg.base_topic + self.name + "/hygrometer" + cfg.state_suffix

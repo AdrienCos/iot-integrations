@@ -8,7 +8,7 @@ from hardware.relay import Relay
 
 
 class SIISOutlet(SIISThing):
-    def __init__(self, name: str = "mqtt_outlet_1"):
+    def __init__(self, name: str = "outlet_1"):
         self.name: str = name
         SIISThing.__init__(self, name)
         self.last_state: str = "OFF"
