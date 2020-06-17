@@ -15,7 +15,7 @@ class SIISPresence(SIISThing):
     """A presence sensor."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
             "presence_1",
             'urn:dev:siis:presence',

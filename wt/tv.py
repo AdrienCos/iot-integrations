@@ -13,7 +13,7 @@ class SIISTV(SIISThing):
     """A TV that logs received commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
             "tv_1",
             'urn:dev:siis:tv',

@@ -17,7 +17,7 @@ class SIISThermometer(SIISThing):
     """A thermometer that logs detected events commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
             "sensor_1",
             'urn:dev:siis:thermometer',
@@ -66,7 +66,7 @@ class SIISBarometer(SIISThing):
     """A barometer that logs detected events commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
             "mqtt_sensor_1",
             'urn:dev:siis:barometer',
@@ -118,7 +118,7 @@ class SIISHygrometer(Thing):
     """A hygrometer that logs detected events commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
             "mqtt_sensor_1",
             'urn:dev:siis:hygrometer',

@@ -15,7 +15,7 @@ class SIISOutlet(SIISThing):
     """A lock that logs received commands to stdout."""
 
     def __init__(self):
-        Thing.__init__(
+        SIISThing.__init__(
             self,
             "outlet_1",
             'urn:dev:siis:outlet',
