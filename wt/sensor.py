@@ -19,7 +19,7 @@ class SIISThermometer(SIISThing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "sensor_1",
+            "sensor_1_therm",
             'urn:dev:siis:thermometer',
             'My Thermometer',
             ['TemperatureSensor'],
@@ -68,7 +68,7 @@ class SIISBarometer(SIISThing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "mqtt_sensor_1",
+            "sensor_1_baro",
             'urn:dev:siis:barometer',
             'My Barometer',
             ['MultiLevelSensor'],
@@ -120,7 +120,7 @@ class SIISHygrometer(Thing):
     def __init__(self):
         SIISThing.__init__(
             self,
-            "mqtt_sensor_1",
+            "sensor_1_hygro",
             'urn:dev:siis:hygrometer',
             'My Hygrometer',
             ['MultiLevelSensor'],

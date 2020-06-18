@@ -39,8 +39,6 @@ class SIISPresence(SIISThing):
 
         self.device = PIR(cfg.pin, self.activated, self.deactivated)
 
-        self.name = "mqtt_presence_1"
-
     def activated(self) -> None:
         pass
 
