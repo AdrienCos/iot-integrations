@@ -114,7 +114,7 @@ class SIISBarometer(SIISThing):
         self.pressure.notify_of_external_update(new_pressure)
 
 
-class SIISHygrometer(Thing):
+class SIISHygrometer(SIISThing):
     """A hygrometer that logs detected events commands to stdout."""
 
     def __init__(self):
