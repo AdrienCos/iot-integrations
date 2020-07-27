@@ -45,6 +45,7 @@ class SIISHVAC(SIISThing):
         return new_temp
 
     def start_polling(self) -> None:
+        "Periodically updates its current state and informs the hub of it"
         temp: float = self.calculate_temp()
         self.last_temp = temp
         self.client.publish(self.temp_state_topic, payload=("%0.1f" % (self.last_temp)), qos=1, retain=True)
@@ -64,6 +65,7 @@ class SIISHVAC(SIISThing):
         threading.Timer(cfg.update_delay, self.start_polling).start()
 
     def set_action(self, action: str) -> None:
+        "Changes the devices' current state"
         if action == "off":
             self.heater_cooler.unset()
         else:
@@ -71,12 +73,14 @@ class SIISHVAC(SIISThing):
         self.last_action = action
 
     def on_connect(self, client: mqtt.Client, userdata, flags, rc):
+        "MQTT callback for when the client connects to the broker"
         SIISThing.on_connect(self, client, userdata, flags, rc)
         self.client.subscribe(self.mode_set_topic)
         self.client.subscribe(self.target_temperature_set)
         self.client.subscribe(self.scheduler_topic)
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        "MQTT callback for when the client receives a message"
         # Check if this is a message that sets the light in a specific config
         if message.topic == self.target_temperature_set:
             # Read the target temp

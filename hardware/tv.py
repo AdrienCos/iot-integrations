@@ -7,7 +7,7 @@ short: str = "https://www.youtube.com/watch?v=C0DPdy98e4c"
 
 
 class TV():
-    "Simple wrapper for a PIR device "
+    "Simple wrapper for a TV "
 
     def __init__(self, media: str = "https://www.youtube.com/watch?v=C0DPdy98e4c"):
         # Get the correct media URL
@@ -15,7 +15,7 @@ class TV():
         best = video.getbest()
         playurl: str = best.url
         self.url = playurl
-
+        # This disables the video and audio output, and loops the video pretty much forever
         self.instance = vlc.Instance("--vout=dummy", "--aout=dummy", "--input-repeat=99999")
         self.player: vlc.MediaPlayer = self.instance.media_player_new()
         self.media: vlc.Media = self.instance.media_new(self.url)

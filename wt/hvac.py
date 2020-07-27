@@ -99,6 +99,7 @@ class SIISHVAC(SIISThing):
         self.timer.start()
 
     def on_message(self, client: mqtt.Client, userdata, message: mqtt.MQTTMessage):
+        "MQTT callback for when the client receives a message"
         if message.topic == self.scheduler_topic:
             payload = message.payload.decode("utf-8")
             try:
@@ -119,6 +120,7 @@ class SIISHVAC(SIISThing):
             SIISThing.on_message(self, client, userdata, message)
 
     def set_mode(self, mode: str) -> None:
+        "Set the device's state"
         logging.debug("Setting mode to %s" % mode)
         self.update_state(mode=mode)
         if mode == "off":
@@ -127,6 +129,7 @@ class SIISHVAC(SIISThing):
             self.relay.on()
 
     def set_target(self, target: float) -> None:
+        "Set the device's target temperature"
         logging.debug("Setting target temp to %d" % target)
         self.update_state(target=target)
 
@@ -148,6 +151,7 @@ class SIISHVAC(SIISThing):
         self.update_state()
 
     def update_state(self, mode: str = None, target: float = None):
+        "Periodically updates its current state and informs the hub of it"
         if mode is None:
             mode = self.mode.get()
         if target is None:
